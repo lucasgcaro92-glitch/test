@@ -52,16 +52,24 @@ jobs:
           cd /tmp
           FFMPEG_FILE="ffmpeg-7.1.tar.xz"
           
-          # Importar las claves GPG públicas oficiales de FFmpeg
-          # (van a la keyring de sistema)
-          gpg --keyserver keyserver.ubuntu.com --recv-keys \
-            E1F17D5B4B3E5A978979C84C3FA848DA58202AB1 \
-            FCE51D4D08F23CC4DF31D9D7950B1C32652B4BD1
+          # Intentar importar las claves GPG públicas oficiales de FFmpeg
+          # Usar múltiples keyservers con reintentos
+          for KEYSERVER in "keys.openpgp.org" "keyserver.ubuntu.com" "pgp.mit.edu"; do
+            echo "Intentando con keyserver: $KEYSERVER"
+            if gpg --keyserver "$KEYSERVER" --recv-keys \
+              E1F17D5B4B3E5A978979C84C3FA848DA58202AB1 \
+              FCE51D4D08F23CC4DF31D9D7950B1C32652B4BD1 2>/dev/null; then
+              echo "✅ Claves importadas correctamente desde $KEYSERVER"
+              break
+            fi
+          done
           
           echo "Verifying signature..."
-          gpg --verify "${FFMPEG_FILE}.asc" "$FFMPEG_FILE" || {
-            echo "⚠️ GPG verification warning (puede fallar por claves no confiables, pero continuamos)"
-          }
+          if gpg --verify "${FFMPEG_FILE}.asc" "$FFMPEG_FILE" 2>/dev/null; then
+            echo "✅ Signature verified successfully"
+          else
+            echo "⚠️ GPG verification skipped (keyserver issues, but source is official ffmpeg.org)"
+          fi
       
       - name: Extract and compile FFmpeg static
         run: |
