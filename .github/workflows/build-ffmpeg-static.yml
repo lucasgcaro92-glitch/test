@@ -127,7 +127,7 @@ jobs:
           ls -lh "${{ github.workspace }}/bin/ffmpeg"
       
       - name: Create artifact for download
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ffmpeg-static-linux-x64
           path: bin/ffmpeg
