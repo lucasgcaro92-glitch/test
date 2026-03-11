@@ -17,7 +17,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       
       - name: Install dependencies for FFmpeg build
         run: |
@@ -127,7 +127,7 @@ jobs:
           ls -lh "${{ github.workspace }}/bin/ffmpeg"
       
       - name: Create artifact for download
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: ffmpeg-static-linux-x64
           path: bin/ffmpeg
