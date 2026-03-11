@@ -28,7 +28,14 @@ jobs:
             curl \
             wget \
             xz-utils \
-            git
+            git \
+            libopus-dev \
+            libvorbis-dev \
+            libtheora-dev \
+            libvpx-dev \
+            libx264-dev \
+            libx265-dev \
+            libfreetype6-dev
       
       - name: Download FFmpeg source from official site
         run: |
