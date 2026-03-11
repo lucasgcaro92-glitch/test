@@ -34,7 +34,6 @@ jobs:
             libtheora-dev \
             libvpx-dev \
             libx264-dev \
-            libx265-dev \
             libfreetype6-dev
       
       - name: Download FFmpeg source from official site
@@ -104,7 +103,6 @@ jobs:
             --enable-ffmpeg \
             --enable-gpl \
             --enable-libx264 \
-            --enable-libx265 \
             --enable-libvpx \
             --enable-libopus \
             --enable-libvorbis \
