@@ -28,13 +28,7 @@ jobs:
             curl \
             wget \
             xz-utils \
-            git \
-            libopus-dev \
-            libvorbis-dev \
-            libtheora-dev \
-            libvpx-dev \
-            libx264-dev \
-            libfreetype6-dev
+            git
       
       - name: Download FFmpeg source from official site
         run: |
@@ -101,12 +95,7 @@ jobs:
             --disable-ffprobe \
             --disable-network \
             --enable-ffmpeg \
-            --enable-gpl \
-            --enable-libx264 \
-            --enable-libvpx \
-            --enable-libopus \
-            --enable-libvorbis \
-            --enable-libtheora
+            --disable-autodetect
           
           echo "🔨 Building..."
           make -j"$(nproc)"
@@ -119,11 +108,28 @@ jobs:
           FFMPEG_BIN="$HOME/ffmpeg-static/bin/ffmpeg"
           
           echo "📋 Binary info:"
-          file "$FFMPEG_BIN"
+          FILE_INFO="$(file "$FFMPEG_BIN")"
+          echo "$FILE_INFO"
           ls -lh "$FFMPEG_BIN"
+
+          # Enforce Linux x86_64 executable to avoid Azure runtime exec failures.
+          echo "$FILE_INFO" | grep -qi 'ELF 64-bit.*x86-64' || {
+            echo "❌ Compiled ffmpeg is not Linux x86_64 ELF"
+            exit 1
+          }
           
           echo "🔗 Checking dependencies (should be none or libc only):"
-          ldd "$FFMPEG_BIN" || echo "Binary is fully static ✅"
+          LDD_OUT="$(ldd "$FFMPEG_BIN" 2>&1 || true)"
+          echo "$LDD_OUT"
+          if echo "$LDD_OUT" | grep -qi 'not a dynamic executable'; then
+            echo "Binary is static ✅"
+          else
+            # Fail if external shared libs appear. This prevents shipping runner-dependent binaries.
+            if echo "$LDD_OUT" | grep -Eq '=> /'; then
+              echo "❌ Binary has shared library dependencies; expected static or portable output"
+              exit 1
+            fi
+          fi
           
           echo "✅ Testing execution:"
           "$FFMPEG_BIN" -version | head -5
